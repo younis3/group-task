@@ -43,7 +43,7 @@ export default function GroupTaskApp({ projectName, data, onUpdate }: Props) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 10 } }),
   );
 
   const update = useCallback((updater: (prev: ProjectData) => ProjectData) => {

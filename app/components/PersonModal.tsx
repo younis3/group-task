@@ -80,12 +80,12 @@ export default function PersonModal({ person, tasks, onClose, onUnassign, onTogg
       ref={backdropRef}
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      style={{ animation: "fadeIn 150ms ease-out" }}
+      style={{ animation: "fadeIn 150ms ease-out", height: "100dvh" }}
     >
       <div
         ref={cardRef}
         className="relative mx-4 w-full max-w-md rounded-3xl bg-white
-          max-h-[85vh] flex flex-col shadow-2xl overflow-hidden"
+          max-h-[85dvh] flex flex-col shadow-2xl overflow-hidden"
         style={{ animation: "slideUp 200ms ease-out" }}
       >
         {/* Header */}

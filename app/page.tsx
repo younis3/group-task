@@ -152,6 +152,7 @@ export default function Home() {
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
+                  onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                   placeholder="اسم المشروع أو الرحلة..."
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3
                     text-[14px] text-gray-900 placeholder:text-gray-300 outline-none
@@ -386,7 +387,7 @@ function ProjectCard({
         <div
           onClick={() => setRenameOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          style={{ animation: "fadeIn 150ms ease-out" }}
+          style={{ animation: "fadeIn 150ms ease-out", height: "100dvh" }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -402,6 +403,7 @@ function ProjectCard({
                 type="text"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
+                onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                 placeholder="اسم المشروع..."
                 className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
                   text-gray-900 placeholder:text-gray-300 outline-none transition-colors

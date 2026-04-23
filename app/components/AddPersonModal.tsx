@@ -37,7 +37,7 @@ export default function AddPersonModal({ onAdd, onClose }: Props) {
       ref={backdropRef}
       onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-      style={{ animation: "fadeIn 150ms ease-out" }}
+      style={{ animation: "fadeIn 150ms ease-out", height: "100dvh" }}
     >
       <div
         className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
@@ -53,6 +53,7 @@ export default function AddPersonModal({ onAdd, onClose }: Props) {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
             placeholder="اسم المشارك..."
             className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
               text-gray-900 placeholder:text-gray-300 outline-none transition-colors

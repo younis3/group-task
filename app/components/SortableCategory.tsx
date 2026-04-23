@@ -20,7 +20,6 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
     attributes,
     listeners,
     setNodeRef,
-    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -55,18 +54,14 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
         ref={setNodeRef}
         style={style}
         {...attributes}
+        {...listeners}
         className={`
-          group flex items-center gap-2 select-none
+          group flex items-center gap-2 select-none cursor-grab active:cursor-grabbing
           ${isDragging ? "opacity-30" : ""}
         `}
       >
-        {/* Drag handle */}
-        <div
-          ref={setActivatorNodeRef}
-          {...listeners}
-          className="shrink-0 text-gray-300 cursor-grab active:cursor-grabbing p-1 -m-1"
-          style={{ touchAction: "none" }}
-        >
+        {/* Drag dots — visual hint */}
+        <div className="shrink-0 text-gray-300 p-1 -m-1">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
             <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
             <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
@@ -101,7 +96,7 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
         <div
           onClick={() => setRenameOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          style={{ animation: "fadeIn 150ms ease-out" }}
+          style={{ animation: "fadeIn 150ms ease-out", height: "100dvh" }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -117,6 +112,7 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
                 type="text"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
+                onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                 placeholder="اسم التصنيف..."
                 className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
                   text-gray-900 placeholder:text-gray-300 outline-none transition-colors

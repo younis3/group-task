@@ -16,7 +16,6 @@ export default function SortablePerson({ id, name, taskCount, onClick }: Props) 
     attributes,
     listeners,
     setNodeRef,
-    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -35,16 +34,10 @@ export default function SortablePerson({ id, name, taskCount, onClick }: Props) 
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`relative ${isDragging ? "opacity-30 z-50" : ""}`}
+      {...listeners}
+      onClick={onClick}
+      className={`relative cursor-pointer ${isDragging ? "opacity-30 z-50" : ""}`}
     >
-      {/* Invisible drag activator — tap passes through to onClick, long-press starts drag */}
-      <div
-        ref={setActivatorNodeRef}
-        {...listeners}
-        onClick={onClick}
-        className="absolute inset-0 z-10 cursor-pointer"
-        style={{ touchAction: "none" }}
-      />
       <PersonTile
         id={id}
         name={name}
