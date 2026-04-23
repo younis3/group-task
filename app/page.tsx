@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+import { useKeyboardAvoid } from "./hooks/useKeyboardAvoid";
 import type { AppStore, Project } from "./types";
 
 const DEFAULT_STORE: AppStore = { projects: [] };
@@ -152,7 +153,6 @@ export default function Home() {
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                   placeholder="اسم المشروع أو الرحلة..."
                   className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3
                     text-[14px] text-gray-900 placeholder:text-gray-300 outline-none
@@ -271,6 +271,7 @@ function ProjectCard({
   const [renameValue, setRenameValue] = useState(project.name);
   const menuRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const kbOffset = useKeyboardAvoid();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -391,8 +392,8 @@ function ProjectCard({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
-            style={{ animation: "slideUp 200ms ease-out" }}
+            className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl transition-transform duration-200"
+            style={{ animation: "slideUp 200ms ease-out", transform: kbOffset ? `translateY(-${kbOffset}px)` : undefined }}
           >
             <h2 className="mb-4 text-center text-base font-bold text-gray-900">تعديل اسم المشروع</h2>
             <form onSubmit={(e) => { e.preventDefault(); commitRename(); }} className="space-y-3">
@@ -403,7 +404,6 @@ function ProjectCard({
                 type="text"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
-                onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                 placeholder="اسم المشروع..."
                 className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
                   text-gray-900 placeholder:text-gray-300 outline-none transition-colors

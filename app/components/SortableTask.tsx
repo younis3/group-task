@@ -39,6 +39,7 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -61,10 +62,9 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className={`
         group flex items-center gap-2.5 rounded-xl border px-3 py-2.5
-        transition-colors duration-150 select-none cursor-grab active:cursor-grabbing
+        transition-colors duration-150 select-none
         ${isDragging
           ? "opacity-30 border-dashed border-gray-200 bg-gray-50 z-50"
           : isAssigned
@@ -73,16 +73,20 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
         }
       `}
     >
-      {/* Drag dots — visual hint */}
-      {sortable && (
-        <div className="shrink-0 text-gray-300 p-1 -m-1">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-            <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
-            <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
-            <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
-          </svg>
-        </div>
-      )}
+      {/* Drag handle */}
+      <div
+        ref={setActivatorNodeRef}
+        {...listeners}
+        className={`shrink-0 cursor-grab active:cursor-grabbing p-1 -m-1
+          ${sortable ? "text-gray-300" : "text-gray-200"}`}
+        style={{ touchAction: "none" }}
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+          <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
+          <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
+          <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
+        </svg>
+      </div>
 
       {/* Checkbox */}
       <button

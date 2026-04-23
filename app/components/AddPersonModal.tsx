@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useKeyboardAvoid } from "../hooks/useKeyboardAvoid";
 
 interface Props {
   onAdd: (name: string) => void;
@@ -11,6 +12,7 @@ export default function AddPersonModal({ onAdd, onClose }: Props) {
   const [value, setValue] = useState("");
   const backdropRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const kbOffset = useKeyboardAvoid();
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -40,8 +42,8 @@ export default function AddPersonModal({ onAdd, onClose }: Props) {
       style={{ animation: "fadeIn 150ms ease-out", height: "100dvh" }}
     >
       <div
-        className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
-        style={{ animation: "slideUp 200ms ease-out" }}
+        className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl transition-transform duration-200"
+        style={{ animation: "slideUp 200ms ease-out", transform: kbOffset ? `translateY(-${kbOffset}px)` : undefined }}
       >
         <h2 className="mb-4 text-center text-base font-bold text-gray-900">إضافة مشارك</h2>
 
@@ -53,7 +55,6 @@ export default function AddPersonModal({ onAdd, onClose }: Props) {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
             placeholder="اسم المشارك..."
             className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
               text-gray-900 placeholder:text-gray-300 outline-none transition-colors

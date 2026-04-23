@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Task } from "../types";
+import { useKeyboardAvoid } from "../hooks/useKeyboardAvoid";
 
 interface Props {
   item: Task;
@@ -15,11 +16,13 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(item.name);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const kbOffset = useKeyboardAvoid();
 
   const {
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -54,14 +57,18 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
         ref={setNodeRef}
         style={style}
         {...attributes}
-        {...listeners}
         className={`
-          group flex items-center gap-2 select-none cursor-grab active:cursor-grabbing
+          group flex items-center gap-2 select-none
           ${isDragging ? "opacity-30" : ""}
         `}
       >
-        {/* Drag dots — visual hint */}
-        <div className="shrink-0 text-gray-300 p-1 -m-1">
+        {/* Drag handle */}
+        <div
+          ref={setActivatorNodeRef}
+          {...listeners}
+          className="shrink-0 text-gray-300 cursor-grab active:cursor-grabbing p-1 -m-1"
+          style={{ touchAction: "none" }}
+        >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
             <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
             <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
@@ -101,7 +108,7 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
           <div
             onClick={(e) => e.stopPropagation()}
             className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
-            style={{ animation: "slideUp 200ms ease-out" }}
+            style={{ animation: "slideUp 200ms ease-out", transform: kbOffset ? `translateY(-${kbOffset}px)` : undefined }}
           >
             <h2 className="mb-4 text-center text-base font-bold text-gray-900">تعديل التصنيف</h2>
             <form onSubmit={(e) => { e.preventDefault(); commitRename(); }} className="space-y-3">
@@ -112,7 +119,6 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
                 type="text"
                 value={renameValue}
                 onChange={(e) => setRenameValue(e.target.value)}
-                onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: "smooth", block: "center" }), 300); }}
                 placeholder="اسم التصنيف..."
                 className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
                   text-gray-900 placeholder:text-gray-300 outline-none transition-colors
