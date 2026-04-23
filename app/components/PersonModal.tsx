@@ -10,9 +10,10 @@ interface Props {
   onClose: () => void;
   onUnassign: (taskId: string) => void;
   onToggleCheck: (taskId: string) => void;
+  onRemovePerson: () => void;
 }
 
-export default function PersonModal({ person, tasks, onClose, onUnassign, onToggleCheck }: Props) {
+export default function PersonModal({ person, tasks, onClose, onUnassign, onToggleCheck, onRemovePerson }: Props) {
   const backdropRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -173,6 +174,15 @@ export default function PersonModal({ person, tasks, onClose, onUnassign, onTogg
               لا توجد مهام مسندة لهذا المشارك
             </div>
           )}
+
+          {/* Delete person */}
+          <button
+            onClick={onRemovePerson}
+            className="mt-4 w-full rounded-xl border border-red-100 py-2.5 text-[12px] font-medium
+              text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 active:bg-red-50"
+          >
+            حذف المشارك
+          </button>
         </div>
       </div>
     </div>

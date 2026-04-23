@@ -43,7 +43,7 @@ export default function GroupTaskApp({ projectName, data, onUpdate }: Props) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
   );
 
   const update = useCallback((updater: (prev: ProjectData) => ProjectData) => {
@@ -324,7 +324,6 @@ export default function GroupTaskApp({ projectName, data, onUpdate }: Props) {
                       name={person.name}
                       taskCount={getTaskCountForPerson(person.id)}
                       onClick={() => setModalPersonId(person.id)}
-                      onRemove={() => removePerson(person.id)}
                     />
                   ))}
                 </div>
@@ -388,6 +387,7 @@ export default function GroupTaskApp({ projectName, data, onUpdate }: Props) {
           onClose={() => setModalPersonId(null)}
           onUnassign={unassignTask}
           onToggleCheck={toggleCheck}
+          onRemovePerson={() => { removePerson(modalPerson.id); setModalPersonId(null); }}
         />
       )}
 

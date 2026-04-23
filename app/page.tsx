@@ -94,6 +94,15 @@ export default function Home() {
     }));
   }, [setStore]);
 
+  const renameProject = useCallback((projectId: string, name: string) => {
+    setStore((prev) => ({
+      ...prev,
+      projects: prev.projects.map((p) =>
+        p.id === projectId ? { ...p, name } : p
+      ),
+    }));
+  }, [setStore]);
+
   if (!hydrated) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#f8f9fb]">
@@ -182,6 +191,7 @@ export default function Home() {
                     onClick={() => router.push(`/project/${project.id}`)}
                     onArchive={() => archiveProject(project.id)}
                     onDelete={() => deleteProject(project.id)}
+                    onRename={(name) => renameProject(project.id, name)}
                     archiveLabel="إخفاء"
                   />
                 ))}
@@ -223,6 +233,7 @@ export default function Home() {
                       onClick={() => router.push(`/project/${project.id}`)}
                       onArchive={() => restoreProject(project.id)}
                       onDelete={() => deleteProject(project.id)}
+                      onRename={(name) => renameProject(project.id, name)}
                       archiveLabel="استعادة"
                       dimmed
                     />
@@ -242,6 +253,7 @@ function ProjectCard({
   onClick,
   onArchive,
   onDelete,
+  onRename,
   archiveLabel,
   dimmed,
 }: {
@@ -249,9 +261,42 @@ function ProjectCard({
   onClick: () => void;
   onArchive: () => void;
   onDelete: () => void;
+  onRename: (name: string) => void;
   archiveLabel: string;
   dimmed?: boolean;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState(project.name);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", handleClick);
+    return () => document.removeEventListener("pointerdown", handleClick);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (renameOpen) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [renameOpen]);
+
+  function commitRename() {
+    const trimmed = renameValue.trim();
+    if (trimmed && trimmed !== project.name) {
+      onRename(trimmed);
+    }
+    setRenameOpen(false);
+  }
+
   const realTasks = project.data.tasks.filter((t) => !t.isCategory);
   const taskCount = realTasks.length;
   const personCount = project.data.people.length;
@@ -261,48 +306,129 @@ function ProjectCard({
   const dateStr = date.toLocaleDateString("ar-SA", { day: "numeric", month: "short" });
 
   return (
-    <div
-      className={`group relative rounded-2xl bg-white border border-gray-100 shadow-sm
-        transition-all duration-200 hover:shadow-md hover:border-gray-200 cursor-pointer
-        ${dimmed ? "opacity-60" : ""}`}
-    >
-      <div onClick={onClick} className="px-4 py-3.5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-[14px] font-bold text-gray-800 truncate">{project.name}</h3>
-            <div className="flex items-center gap-3 mt-1.5">
-              <span className="text-[11px] text-gray-400">{taskCount} مهمة</span>
-              <span className="text-[11px] text-gray-400">{personCount} مشارك</span>
-              {taskCount > 0 && (
-                <span className="text-[11px] text-gray-400">
-                  {assignedCount}/{taskCount} موزعة
-                  {checkedCount > 0 && ` · ${checkedCount} مكتملة`}
-                </span>
-              )}
+    <>
+      <div
+        className={`relative rounded-2xl bg-white border border-gray-100 shadow-sm
+          transition-all duration-200 hover:shadow-md hover:border-gray-200
+          ${dimmed ? "opacity-60" : ""}`}
+      >
+        <div onClick={onClick} className="px-4 py-3.5 cursor-pointer">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[14px] font-bold text-gray-800 truncate">{project.name}</h3>
+              <div className="flex items-center gap-3 mt-1.5">
+                <span className="text-[11px] text-gray-400">{taskCount} مهمة</span>
+                <span className="text-[11px] text-gray-400">{personCount} مشارك</span>
+                {taskCount > 0 && (
+                  <span className="text-[11px] text-gray-400">
+                    {assignedCount}/{taskCount} موزعة
+                    {checkedCount > 0 && ` · ${checkedCount} مكتملة`}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-[10px] text-gray-300 mt-0.5">{dateStr}</span>
+              {/* 3-dot menu */}
+              <div ref={menuRef} className="relative">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg
+                    text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <circle cx="7" cy="3" r="1.2" />
+                    <circle cx="7" cy="7" r="1.2" />
+                    <circle cx="7" cy="11" r="1.2" />
+                  </svg>
+                </button>
+
+                {menuOpen && (
+                  <div className="absolute left-0 top-full mt-1 z-30 w-32 rounded-xl bg-white border border-gray-100
+                    shadow-lg overflow-hidden" style={{ animation: "fadeIn 100ms ease-out" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpen(false);
+                        setRenameValue(project.name);
+                        setRenameOpen(true);
+                      }}
+                      className="w-full px-3 py-2 text-[12px] font-medium text-gray-600 text-right
+                        transition-colors hover:bg-gray-50"
+                    >
+                      تعديل الاسم
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onArchive(); }}
+                      className="w-full px-3 py-2 text-[12px] font-medium text-gray-600 text-right
+                        transition-colors hover:bg-gray-50"
+                    >
+                      {archiveLabel}
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(); }}
+                      className="w-full px-3 py-2 text-[12px] font-medium text-red-500 text-right
+                        transition-colors hover:bg-red-50"
+                    >
+                      حذف
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-          <span className="shrink-0 text-[10px] text-gray-300 mt-0.5">{dateStr}</span>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex border-t border-gray-50">
-        <button
-          onClick={(e) => { e.stopPropagation(); onArchive(); }}
-          className="flex-1 py-2 text-[11px] font-medium text-gray-400 transition-colors
-            hover:bg-gray-50 hover:text-gray-600 rounded-bl-2xl"
+      {/* Rename modal */}
+      {renameOpen && (
+        <div
+          onClick={() => setRenameOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          style={{ animation: "fadeIn 150ms ease-out" }}
         >
-          {archiveLabel}
-        </button>
-        <div className="w-px bg-gray-50" />
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          className="flex-1 py-2 text-[11px] font-medium text-gray-400 transition-colors
-            hover:bg-red-50 hover:text-red-500 rounded-br-2xl"
-        >
-          حذف
-        </button>
-      </div>
-    </div>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
+            style={{ animation: "slideUp 200ms ease-out" }}
+          >
+            <h2 className="mb-4 text-center text-base font-bold text-gray-900">تعديل اسم المشروع</h2>
+            <form onSubmit={(e) => { e.preventDefault(); commitRename(); }} className="space-y-3">
+              <input
+                ref={renameInputRef}
+                id={`rename-${project.id}`}
+                name={`rename-${project.id}`}
+                type="text"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="اسم المشروع..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
+                  text-gray-900 placeholder:text-gray-300 outline-none transition-colors
+                  focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={!renameValue.trim()}
+                  className="flex-1 rounded-xl bg-gray-900 py-2.5 text-sm font-semibold text-white
+                    transition-all active:scale-[0.97] disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  حفظ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRenameOpen(false)}
+                  className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium
+                    text-gray-500 transition-all active:scale-[0.97] hover:bg-gray-50"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

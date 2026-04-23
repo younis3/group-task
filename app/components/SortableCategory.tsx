@@ -12,14 +12,15 @@ interface Props {
 }
 
 export default function SortableCategory({ item, onRename, onRemove }: Props) {
-  const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState(item.name);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState(item.name);
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const {
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -34,65 +35,55 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
   };
 
   useEffect(() => {
-    if (editing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
+    if (renameOpen) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
     }
-  }, [editing]);
+  }, [renameOpen]);
 
-  function commitEdit() {
-    const trimmed = editValue.trim();
+  function commitRename() {
+    const trimmed = renameValue.trim();
     if (trimmed && trimmed !== item.name) {
       onRename(item.id, trimmed);
-    } else {
-      setEditValue(item.name);
     }
-    setEditing(false);
+    setRenameOpen(false);
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className={`
-        group flex items-center gap-2 select-none
-        ${isDragging ? "opacity-30" : ""}
-      `}
-    >
-      {/* Drag handle */}
-      <div className="shrink-0 text-gray-300 cursor-grab active:cursor-grabbing">
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-          <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
-          <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
-          <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
-        </svg>
-      </div>
+    <>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        className={`
+          group flex items-center gap-2 select-none
+          ${isDragging ? "opacity-30" : ""}
+        `}
+      >
+        {/* Drag handle */}
+        <div
+          ref={setActivatorNodeRef}
+          {...listeners}
+          className="shrink-0 text-gray-300 cursor-grab active:cursor-grabbing p-1 -m-1"
+          style={{ touchAction: "none" }}
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+            <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
+            <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
+            <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
+          </svg>
+        </div>
 
-      {/* Divider line + label */}
-      <div className="flex flex-1 items-center gap-2 min-w-0">
-        <div className="h-px flex-1 bg-gray-200" />
+        {/* Divider line + label */}
+        <div className="flex flex-1 items-center gap-2 min-w-0">
+          <div className="h-px flex-1 bg-gray-200" />
 
-        {editing ? (
-          <input
-            ref={inputRef}
-            id={`cat-edit-${item.id}`}
-            name={`cat-edit-${item.id}`}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={commitEdit}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") commitEdit();
-              if (e.key === "Escape") { setEditValue(item.name); setEditing(false); }
-            }}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="shrink-0 max-w-[140px] rounded-md border border-blue-300 bg-white px-2 py-0.5
-              text-[11px] font-semibold text-gray-600 outline-none text-center"
-          />
-        ) : (
           <button
-            onClick={(e) => { e.stopPropagation(); setEditing(true); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setRenameValue(item.name);
+              setRenameOpen(true);
+            }}
             onPointerDown={(e) => e.stopPropagation()}
             className="shrink-0 rounded-full bg-gray-100 px-3 py-0.5
               text-[11px] font-semibold text-gray-500 transition-colors
@@ -100,23 +91,66 @@ export default function SortableCategory({ item, onRename, onRemove }: Props) {
           >
             {item.name}
           </button>
-        )}
 
-        <div className="h-px flex-1 bg-gray-200" />
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
       </div>
 
-      {/* Remove */}
-      <button
-        onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
-        onPointerDown={(e) => e.stopPropagation()}
-        className="opacity-0 group-hover:opacity-100 shrink-0 flex h-5 w-5 items-center justify-center
-          rounded-md text-gray-300 transition-all hover:bg-red-50 hover:text-red-400"
-        aria-label="حذف"
-      >
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M2 2L8 8M8 2L2 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      </button>
-    </div>
+      {/* Rename modal */}
+      {renameOpen && (
+        <div
+          onClick={() => setRenameOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          style={{ animation: "fadeIn 150ms ease-out" }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative mx-6 w-full max-w-xs rounded-2xl bg-white p-6 shadow-2xl"
+            style={{ animation: "slideUp 200ms ease-out" }}
+          >
+            <h2 className="mb-4 text-center text-base font-bold text-gray-900">تعديل التصنيف</h2>
+            <form onSubmit={(e) => { e.preventDefault(); commitRename(); }} className="space-y-3">
+              <input
+                ref={renameInputRef}
+                id={`cat-rename-${item.id}`}
+                name={`cat-rename-${item.id}`}
+                type="text"
+                value={renameValue}
+                onChange={(e) => setRenameValue(e.target.value)}
+                placeholder="اسم التصنيف..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm
+                  text-gray-900 placeholder:text-gray-300 outline-none transition-colors
+                  focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={!renameValue.trim()}
+                  className="flex-1 rounded-xl bg-gray-900 py-2.5 text-sm font-semibold text-white
+                    transition-all active:scale-[0.97] disabled:opacity-20 disabled:cursor-not-allowed"
+                >
+                  حفظ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRenameOpen(false)}
+                  className="flex-1 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium
+                    text-gray-500 transition-all active:scale-[0.97] hover:bg-gray-50"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+            <button
+              onClick={() => { setRenameOpen(false); onRemove(item.id); }}
+              className="mt-3 w-full rounded-xl border border-red-100 py-2.5 text-[12px] font-medium
+                text-red-400 transition-colors hover:bg-red-50 hover:text-red-500 active:bg-red-50"
+            >
+              حذف التصنيف
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -39,6 +39,7 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -60,7 +61,6 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
       {...attributes}
       className={`
         group flex items-center gap-2.5 rounded-xl border px-3 py-2.5
@@ -73,18 +73,22 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
         }
       `}
     >
-      {/* Drag handle for custom sort */}
-      {sortable && (
-        <div className="shrink-0 text-gray-300 cursor-grab active:cursor-grabbing">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
-            <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
-            <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
-            <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
-          </svg>
-        </div>
-      )}
+      {/* Drag handle — always visible for touch drag */}
+      <div
+        ref={setActivatorNodeRef}
+        {...listeners}
+        className={`shrink-0 cursor-grab active:cursor-grabbing p-1 -m-1
+          ${sortable ? "text-gray-300" : "text-gray-200"}`}
+        style={{ touchAction: "none" }}
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+          <circle cx="3" cy="2" r="1" /><circle cx="7" cy="2" r="1" />
+          <circle cx="3" cy="5" r="1" /><circle cx="7" cy="5" r="1" />
+          <circle cx="3" cy="8" r="1" /><circle cx="7" cy="8" r="1" />
+        </svg>
+      </div>
 
-      {/* Checkbox — clickable only when assigned */}
+      {/* Checkbox */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -125,8 +129,8 @@ export default function SortableTask({ task, personName, personId, onRemove, onT
       <button
         onClick={(e) => { e.stopPropagation(); onRemove(task.id); }}
         onPointerDown={(e) => e.stopPropagation()}
-        className="opacity-0 group-hover:opacity-100 shrink-0 flex h-5 w-5 items-center justify-center
-          rounded-md text-gray-300 transition-all hover:bg-red-50 hover:text-red-400"
+        className="shrink-0 flex h-5 w-5 items-center justify-center
+          rounded-md text-gray-300 transition-all hover:bg-red-50 hover:text-red-400 active:bg-red-50 active:text-red-400"
         aria-label="حذف"
       >
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">

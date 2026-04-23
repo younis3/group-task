@@ -44,14 +44,14 @@ export default function PersonTile({ id, name, taskCount, onClick }: Props) {
     >
       <div
         className={`
-          flex h-14 w-full items-center justify-center rounded-[14px] px-0.5
+          flex h-14 w-full items-center justify-center rounded-[14px] px-1 py-0.5
           bg-gradient-to-br text-white shadow-sm overflow-hidden
           transition-all duration-200
           ${getColor(id)}
           ${isOver ? "shadow-lg ring-2 ring-blue-400 ring-offset-2" : ""}
         `}
       >
-        <span className="max-w-full truncate text-[13px] font-bold leading-none drop-shadow-sm">
+        <span className="max-w-full text-center text-[12px] font-bold leading-tight drop-shadow-sm line-clamp-2 break-all">
           {name}
         </span>
       </div>
